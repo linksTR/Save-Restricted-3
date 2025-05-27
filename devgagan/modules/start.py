@@ -210,23 +210,35 @@ async def plan(client, message):
             "✨ Enjoy unlimited access to all bot features.\n\n"
             "📜 **Terms and Conditions**: For details, please send /terms\n"
         )
+        buttons = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("📜 See Terms", callback_data="see_terms")],
+                [
+                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot"),
+                    InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")
+                ]
+            ]
+        )
     else:
         plan_text = (
-            "> 💰 **Premium Price**:\n\n Starting from 39 INR accepted via **__UPI__** (terms and conditions apply).\n"
+            "> 💰 **Premium Plans**\n\n"
             "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
             "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
             "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
-            "📜 **Terms and Conditions**: For further details and complete terms and conditions, please send /terms.\n"
+            "📜 **Check our pricing channel for current plans and offers**\n"
         )
-     
-    buttons = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("📜 See Terms", callback_data="see_terms")],
-            [InlineKeyboardButton("💬 Contact Now", url="https://t.me/Contact_xbot")],
-        ]
-    )
+        buttons = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")],
+                [
+                    InlineKeyboardButton("📜 See Terms", callback_data="see_terms"),
+                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot")
+                ]
+            ]
+        )
+    
     await message.reply_text(plan_text, reply_markup=buttons)
- 
+
 @app.on_callback_query(filters.regex("see_plan"))
 async def see_plan(client, callback_query):
     from devgagan.core.mongo.plans_db import db
@@ -241,37 +253,31 @@ async def see_plan(client, callback_query):
             "✨ Enjoy unlimited access to all bot features.\n\n"
             "📜 **Terms and Conditions**: For details, please send /terms\n"
         )
+        buttons = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("📜 See Terms", callback_data="see_terms")],
+                [
+                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot"),
+                    InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")
+                ]
+            ]
+        )
     else:
         plan_text = (
-            "> 💰**Premium Price**\n\n Starting from 39 INR accepted via **__UPI__** (terms and conditions apply).\n"
+            "> 💰 **Premium Plans**\n\n"
             "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
             "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
             "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
-            "📜 **Terms and Conditions**: For further details and complete terms and conditions, please send /terms or click See Terms👇\n"
+            "📜 **Check our pricing channel for current plans and offers**\n"
         )
-     
-    buttons = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("📜 See Terms", callback_data="see_terms")],
-            [InlineKeyboardButton("💬 Contact Now", url="https://t.me/Contact_xbot")],
-        ]
-    )
+        buttons = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")],
+                [
+                    InlineKeyboardButton("📜 See Terms", callback_data="see_terms"),
+                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot")
+                ]
+            ]
+        )
+    
     await callback_query.message.edit_text(plan_text, reply_markup=buttons)
- 
-@app.on_callback_query(filters.regex("see_terms"))
-async def see_terms(client, callback_query):
-    terms_text = (
-        "> 📜 **Terms and Conditions** 📜\n\n"
-        "✨ We are not responsible for user deeds, and we do not promote copyrighted content. If any user engages in such activities, it is solely their responsibility.\n"
-        "✨ Upon purchase, we do not guarantee the uptime, downtime, or the validity of the plan. __Authorization and banning of users are at our discretion; we reserve the right to ban or authorize users at any time.__\n"
-        "✨ Payment to us **__does not guarantee__** authorization for the /batch command. All decisions regarding authorization are made at our discretion and mood.\n"
-        "✨ In FREE MODE, all features are available to everyone without restrictions.\n"
-    )
-     
-    buttons = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("📋 See Plans", callback_data="see_plan")],
-            [InlineKeyboardButton("💬 Contact Now", url="https://t.me/Contact_xbot")],
-        ]
-    )
-    await callback_query.message.edit_text(terms_text, reply_markup=buttons)
