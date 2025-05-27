@@ -39,9 +39,7 @@ async def set(_, message):
         BotCommand("speedtest", "🚅 Speed of server"),
         BotCommand("help", "❓ If you're a noob, still!"),
         BotCommand("terms", "🥺 Terms and conditions"),
-        BotCommand("admin_commands_list", "📜 List of admin commands"),
-        BotCommand("changemode", "🔄 Toggle free/premium mode (Owner only)"),  # Changed from freemode
-        BotCommand("modecheck", "🔍 Check current mode")
+        BotCommand("admin_commands_list", "📜 List of admin commands")
     ])
  
     await message.reply("✅ Commands configured successfully!")
