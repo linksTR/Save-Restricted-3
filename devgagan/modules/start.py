@@ -2,10 +2,7 @@
 # File Name: start.py
 # Description: A Pyrogram bot for downloading files from Telegram channels or groups 
 #              and uploading them back to Telegram.
-# Author: Gagan
-# GitHub: https://github.com/devgaganin/
-# Telegram: https://t.me/team_spy_pro
-# YouTube: https://youtube.com/@dev_gagan
+# Author: Adarsh
 # Created: 2025-01-11
 # Last Modified: 2025-01-11
 # Version: 2.0.6
@@ -18,6 +15,7 @@ from config import OWNER_ID
 from devgagan.core.func import subscribe
 import asyncio
 from devgagan.core.func import *
+from devgagan.modules.get import *
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.raw.functions.bots import SetBotInfo
 from pyrogram.raw.types import InputUserSelf
@@ -42,14 +40,14 @@ async def set(_, message):
         BotCommand("help", "❓ If you're a noob, still!"),
         BotCommand("terms", "🥺 Terms and conditions"),
         BotCommand("admin_commands_list", "📜 List of admin commands"),
-        BotCommand("freemode", "🆓 Toggle free mode (Owner only)"),
+        BotCommand("changemode", "🔄 Toggle free/premium mode (Owner only)"),  # Changed from freemode
         BotCommand("modecheck", "🔍 Check current mode")
     ])
  
     await message.reply("✅ Commands configured successfully!")
 
-# Free Mode Toggle Commands
-@app.on_message(filters.command("freemode") & filters.user(OWNER_ID))
+# Mode Toggle Commands (renamed from freemode to changemode)
+@app.on_message(filters.command("changemode") & filters.user(OWNER_ID))
 async def toggle_free_mode(client, message):
     """Toggle between free and premium modes"""
     from devgagan.core.mongo.plans_db import db
@@ -96,8 +94,8 @@ help_pages = [
         "> Log into the bot for private channel access\n\n"
         "9. **/batch**\n"
         "> Bulk extraction for posts (After login)\n\n"
-        "19. **/freemode**\n"
-        "> Toggle free mode (Owner only)\n\n"
+        "19. **/changemode**\n"  # Changed from freemode
+        "> Toggle between free/premium modes (Owner only)\n\n"
         "20. **/modecheck**\n"
         "> Check current mode\n\n"
     ),
