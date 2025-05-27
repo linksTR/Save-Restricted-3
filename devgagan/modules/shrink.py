@@ -161,18 +161,20 @@ async def show_admin_commands(client, message):
     
 /add userID            - ➕ Add user to premium  
 /rem userID            - ➖ Remove user from premium  
+/get                   - 🗄️ Get all user IDs 
 /stats                 - 📊 Get bot stats  
 /gcast                 - ⚡ Broadcast to all users  
 /acast                 - ⚡ Broadcast with name tag  
-/freez                 - 🧊 Remove expired users  
-/get                   - 🗄️ Get all user IDs  
-/lock                  - 🔒 Protect channel  
+/changemode            -🔄 Toggle free/premium mode
+/modecheck             -🔍 Check current mode
 /hijack                - ☠️ Hijack a session
-/cancel_hijack         - 🚫 Terminate Hijacking 
-/session               - 🪪 Generate session string  
+/cancel_hijack         - 🚫 Terminate Hijacking
 /connect_user          - 🔗 Connect owner & user  
-/disconnect_user       - ⛔ Disconnect a user  
+/disconnect_user       - ⛔ Disconnect a user 
+/freez                 - 🧊 Remove expired users  
+/lock                  - 🔒 Protect channel  
 /admin_commands_list   - 📄 Show admin commands
+
     """
     await message.reply(admin_commands)
 
