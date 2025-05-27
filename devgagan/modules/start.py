@@ -8,7 +8,7 @@
 # YouTube: https://youtube.com/@dev_gagan
 # Created: 2025-01-11
 # Last Modified: 2025-01-11
-# Version: 2.0.5
+# Version: 2.0.6
 # License: MIT License
 # ---------------------------------------------------
 
@@ -21,7 +21,6 @@ from devgagan.core.func import *
 from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.raw.functions.bots import SetBotInfo
 from pyrogram.raw.types import InputUserSelf
-
 from pyrogram.types import BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
  
 @app.on_message(filters.command("set"))
@@ -42,14 +41,40 @@ async def set(_, message):
         BotCommand("speedtest", "🚅 Speed of server"),
         BotCommand("help", "❓ If you're a noob, still!"),
         BotCommand("terms", "🥺 Terms and conditions"),
-        BotCommand("admin_commands_list", "📜 List of admin commands")
+        BotCommand("admin_commands_list", "📜 List of admin commands"),
+        BotCommand("freemode", "🆓 Toggle free mode (Owner only)"),
+        BotCommand("modecheck", "🔍 Check current mode")
     ])
  
     await message.reply("✅ Commands configured successfully!")
- 
- 
- 
- 
+
+# Free Mode Toggle Commands
+@app.on_message(filters.command("freemode") & filters.user(OWNER_ID))
+async def toggle_free_mode(client, message):
+    """Toggle between free and premium modes"""
+    from devgagan.core.mongo.plans_db import db
+    current_mode = await db.bot_mode.find_one({"_id": "mode"})
+    new_mode = not current_mode.get("free_mode", False) if current_mode else True
+    
+    await db.bot_mode.update_one(
+        {"_id": "mode"},
+        {"$set": {"free_mode": new_mode}},
+        upsert=True
+    )
+    
+    status = "🆓 FREE MODE (available to everyone)" if new_mode else "💰 PREMIUM MODE (subscription required)"
+    await message.reply(f"Bot mode changed:\n\n{status}")
+
+@app.on_message(filters.command("modecheck"))
+async def check_mode(client, message):
+    """Check current bot mode"""
+    from devgagan.core.mongo.plans_db import db
+    mode_data = await db.bot_mode.find_one({"_id": "mode"})
+    current_mode = mode_data.get("free_mode", False) if mode_data else False
+    
+    status = "🆓 Currently in FREE MODE (available to everyone)" if current_mode else "💰 Currently in PREMIUM MODE (subscription required)"
+    await message.reply(status)
+
 help_pages = [
     (
         "📝 **Bot Commands Overview (1/2)**:\n\n"
@@ -71,6 +96,10 @@ help_pages = [
         "> Log into the bot for private channel access\n\n"
         "9. **/batch**\n"
         "> Bulk extraction for posts (After login)\n\n"
+        "19. **/freemode**\n"
+        "> Toggle free mode (Owner only)\n\n"
+        "20. **/modecheck**\n"
+        "> Check current mode\n\n"
     ),
     (
         "📝 **Bot Commands Overview (2/2)**:\n\n"
@@ -101,18 +130,13 @@ help_pages = [
     )
 ]
  
- 
-
- 
 @app.on_message(filters.command("help"))
 async def help(client, message):
     join = await subscribe(client, message)
     if join == 1:
         return
- 
      
     await send_or_edit_help_page(client, message, 0)
-
 
 @app.on_callback_query(filters.regex(r"help_(prev|next)_(\d+)"))
 async def on_help_navigation(client, callback_query):
@@ -126,13 +150,12 @@ async def on_help_navigation(client, callback_query):
     await send_or_edit_help_page(client, callback_query.message, page_number)
     await callback_query.answer()
 
-
 async def send_or_edit_help_page(_, message, page_number):
     if page_number < 0 or page_number >= len(help_pages):
         return
 
     if message is None:
-        return  # Prevents AttributeError if message is None
+        return
 
     prev_button = InlineKeyboardButton("◀️ Previous", callback_data=f"help_prev_{page_number}")
     next_button = InlineKeyboardButton("Next ▶️", callback_data=f"help_next_{page_number}")
@@ -148,16 +171,12 @@ async def send_or_edit_help_page(_, message, page_number):
     try:
         await message.delete()
     except Exception as e:
-        print(f"Failed to delete message: {e}")  # Logs the error if message deletion fails
+        print(f"Failed to delete message: {e}")
 
     await message.reply(
         help_pages[page_number],
         reply_markup=keyboard
     )
- 
-
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
  
 @app.on_message(filters.command("terms") & filters.private)
 async def terms(client, message):
@@ -166,6 +185,7 @@ async def terms(client, message):
         "✨ We are not responsible for user deeds, and we do not promote copyrighted content. If any user engages in such activities, it is solely their responsibility.\n"
         "✨ Upon purchase, we do not guarantee the uptime, downtime, or the validity of the plan. __Authorization and banning of users are at our discretion; we reserve the right to ban or authorize users at any time.__\n"
         "✨ Payment to us **__does not guarantee__** authorization for the /batch command. All decisions regarding authorization are made at our discretion and mood.\n"
+        "✨ In FREE MODE, all features are available to everyone without restrictions.\n"
     )
      
     buttons = InlineKeyboardMarkup(
@@ -176,16 +196,28 @@ async def terms(client, message):
     )
     await message.reply_text(terms_text, reply_markup=buttons)
  
- 
 @app.on_message(filters.command("plan") & filters.private)
 async def plan(client, message):
-    plan_text = (
-        "> 💰 **Premium Price**:\n\n Starting from 39 INR accepted via **__UPI__** (terms and conditions apply).\n"
-        "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
-        "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
-        "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
-        "📜 **Terms and Conditions**: For further details and complete terms and conditions, please send /terms.\n"
-    )
+    from devgagan.core.mongo.plans_db import db
+    mode_data = await db.bot_mode.find_one({"_id": "mode"})
+    current_mode = mode_data.get("free_mode", False) if mode_data else False
+    
+    if current_mode:
+        plan_text = (
+            "> 🎉 **FREE MODE ACTIVE** 🎉\n\n"
+            "✨ Currently all features are available to everyone for free!\n"
+            "✨ No subscriptions or payments required at this time.\n"
+            "✨ Enjoy unlimited access to all bot features.\n\n"
+            "📜 **Terms and Conditions**: For details, please send /terms\n"
+        )
+    else:
+        plan_text = (
+            "> 💰 **Premium Price**:\n\n Starting from 39 INR accepted via **__UPI__** (terms and conditions apply).\n"
+            "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
+            "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
+            "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
+            "📜 **Terms and Conditions**: For further details and complete terms and conditions, please send /terms.\n"
+        )
      
     buttons = InlineKeyboardMarkup(
         [
@@ -195,16 +227,28 @@ async def plan(client, message):
     )
     await message.reply_text(plan_text, reply_markup=buttons)
  
- 
 @app.on_callback_query(filters.regex("see_plan"))
 async def see_plan(client, callback_query):
-    plan_text = (
-        "> 💰**Premium Price**\n\n Starting from 39 INR accepted via **__UPI__** (terms and conditions apply).\n"
-        "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
-        "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
-        "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
-        "📜 **Terms and Conditions**: For further details and complete terms and conditions, please send /terms or click See Terms👇\n"
-    )
+    from devgagan.core.mongo.plans_db import db
+    mode_data = await db.bot_mode.find_one({"_id": "mode"})
+    current_mode = mode_data.get("free_mode", False) if mode_data else False
+    
+    if current_mode:
+        plan_text = (
+            "> 🎉 **FREE MODE ACTIVE** 🎉\n\n"
+            "✨ Currently all features are available to everyone for free!\n"
+            "✨ No subscriptions or payments required at this time.\n"
+            "✨ Enjoy unlimited access to all bot features.\n\n"
+            "📜 **Terms and Conditions**: For details, please send /terms\n"
+        )
+    else:
+        plan_text = (
+            "> 💰**Premium Price**\n\n Starting from 39 INR accepted via **__UPI__** (terms and conditions apply).\n"
+            "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
+            "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
+            "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
+            "📜 **Terms and Conditions**: For further details and complete terms and conditions, please send /terms or click See Terms👇\n"
+        )
      
     buttons = InlineKeyboardMarkup(
         [
@@ -214,7 +258,6 @@ async def see_plan(client, callback_query):
     )
     await callback_query.message.edit_text(plan_text, reply_markup=buttons)
  
- 
 @app.on_callback_query(filters.regex("see_terms"))
 async def see_terms(client, callback_query):
     terms_text = (
@@ -222,6 +265,7 @@ async def see_terms(client, callback_query):
         "✨ We are not responsible for user deeds, and we do not promote copyrighted content. If any user engages in such activities, it is solely their responsibility.\n"
         "✨ Upon purchase, we do not guarantee the uptime, downtime, or the validity of the plan. __Authorization and banning of users are at our discretion; we reserve the right to ban or authorize users at any time.__\n"
         "✨ Payment to us **__does not guarantee__** authorization for the /batch command. All decisions regarding authorization are made at our discretion and mood.\n"
+        "✨ In FREE MODE, all features are available to everyone without restrictions.\n"
     )
      
     buttons = InlineKeyboardMarkup(
@@ -231,5 +275,3 @@ async def see_terms(client, callback_query):
         ]
     )
     await callback_query.message.edit_text(terms_text, reply_markup=buttons)
- 
- 
