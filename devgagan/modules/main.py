@@ -14,8 +14,55 @@ import time
 import random
 import string
 import asyncio
-from modules.config import Config # config.py'dan Config sınıfını çekiyoruz
-from modules.restricted_content_handler import handle_telegram_content # Yeni işleyici fonksiyonunu çekiyoruz
+# modules/main.py
+
+import time
+import random
+import string
+import asyncio
+from pyrogram import filters, Client
+from pyrogram.errors import FloodWait
+from datetime import datetime, timedelta
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+# Kendi yeni modüllerimizi içe aktarıyoruz
+from modules.config import Config as RestrictedModuleConfig # Çakışmayı önlemek için farklı isim
+from modules.restricted_content_handler import handle_restricted_content # Ana işleyici fonksiyon
+
+# Mevcut devgagan import'ları (değişmedi)
+from devgagan import app # Ana Pyrogram bot objesi
+from config import API_ID, API_HASH, FREEMIUM_LIMIT, PREMIUM_LIMIT, OWNER_ID # Ana dizindeki config
+from devgagan.core.get_func import get_msg
+from devgagan.core.func import *
+from devgagan.core.mongo import db
+from devgagan.core.mongo.db import user_sessions_real
+import subprocess
+from pyrogram.handlers import MessageHandler, CallbackQueryHandler
+
+from devgagan.modules.shrink import is_user_verified
+
+# Global değişkenler (değişmedi)
+users_loop = {}
+interval_set = {}
+batch_mode = {}
+
+# Userbot istemcisini global olarak tanımla
+# Bu, app.py veya botun başlangıcında başlatılacak ve handler'lara iletilecek
+global_userbot_client = None # Bot başlatıldığında atanacak
+
+# Diğer yardımcı fonksiyonlar (initialize_userbot, process_and_upload_link, check_interval, set_interval, is_normal_tg_link, process_special_links)
+# aynı kalabilir.
+# Ancak `process_special_links` fonksiyonunun içeriği artık `handle_restricted_content` içinde olduğundan,
+# bu fonksiyonun içini boşaltabilir veya kaldırabilirsin.
+
+# Önemli: `process_special_links` fonksiyonunu kaldırıyoruz veya içini boşaltıyoruz
+# çünkü tüm link işleme `handle_restricted_content` tarafından yapılacak.
+async def process_special_links(userbot, user_id, msg, link):
+    """
+    Bu fonksiyonun içeriği artık handle_restricted_content tarafından yönetildiği için
+    bu fonksiyonu kaldırabiliriz veya içini boşaltabiliriz.
+    """
+    pass # Boş bırakıldı, eğer hala bir yerde çağrılıyorsa silmek yerine boş bırakmak daha güvenli.
 from pyrogram import filters, Client
 from devgagan import app
 from config import API_ID, API_HASH, FREEMIUM_LIMIT, PREMIUM_LIMIT, OWNER_ID
