@@ -14,6 +14,8 @@ import time
 import random
 import string
 import asyncio
+from modules.config import Config # config.py'dan Config sınıfını çekiyoruz
+from modules.restricted_content_handler import handle_telegram_content # Yeni işleyici fonksiyonunu çekiyoruz
 from pyrogram import filters, Client
 from devgagan import app
 from config import API_ID, API_HASH, FREEMIUM_LIMIT, PREMIUM_LIMIT, OWNER_ID
