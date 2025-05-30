@@ -1,15 +1,15 @@
 # ---------------------------------------------------
-# File Name: func.py
-# Description: A Pyrogram bot for downloading files from Telegram channels or groups 
-#              and uploading them back to Telegram.
-# Author: Gagan
+# Dosya Adi: func.py
+# Aciklama: Telegram kanallarindan veya gruplarindan dosya indirmek ve
+# onlari tekrar Telegram'a yuklemek icin bir Pyrogram botu.
+# Yazar: Gagan
 # GitHub: https://github.com/devgaganin/
 # Telegram: https://t.me/team_spy_pro
 # YouTube: https://youtube.com/@dev_gagan
-# Created: 2025-01-11
-# Last Modified: 2025-01-11
-# Version: 2.0.6
-# License: MIT License
+# Olusturulma Tarihi: 2025-01-11
+# Son Degisiklik: 2025-01-11
+# Surum: 2.0.6
+# Lisans: MIT Lisansi
 # ---------------------------------------------------
 
 import math
@@ -24,7 +24,7 @@ from datetime import datetime as dt
 import asyncio, subprocess, re, os, time
 
 async def check_bot_mode():
-    """Check if bot is in free mode from database"""
+    """Botun ucretsiz modda olup olmadigini veritabanindan kontrol eder"""
     if MONGO_DB:
         from devgagan.core.mongo.plans_db import db
         mode_data = await db.bot_mode.find_one({"_id": "mode"})
@@ -32,10 +32,10 @@ async def check_bot_mode():
     return False
 
 async def chk_user(message, user_id):
-    """Check user access rights based on mode"""
+    """Kullanicinin erisim haklarini moda gore kontrol eder"""
     free_mode = await check_bot_mode()
     if free_mode:
-        return 0  # Free mode - allow everyone
+        return 0 # Ucretsiz mod - herkese izin ver
     
     user = await premium_users()
     if user_id in user or user_id in OWNER_ID:
@@ -43,15 +43,15 @@ async def chk_user(message, user_id):
     return 1
 
 async def gen_link(app, chat_id):
-    """Generate invite link for a chat"""
+    """Bir sohbet icin davet linki olusturur"""
     link = await app.export_chat_invite_link(chat_id)
     return link
 
 async def subscribe(app, message):
-    """Check channel subscription requirement"""
+    """Kanal abonelik gereksinimini kontrol eder"""
     free_mode = await check_bot_mode()
     if free_mode:
-        return 0  # Skip channel join check in free mode
+        return 0 # Ucretsiz modda kanal katilim kontrolunu atla
         
     update_channel = CHANNEL_ID
     url = await gen_link(app, update_channel)
@@ -59,24 +59,24 @@ async def subscribe(app, message):
         try:
             user = await app.get_chat_member(update_channel, message.from_user.id)
             if user.status == "kicked":
-                await message.reply_text("You are Banned. Contact -- @denujke")
+                await message.reply_text("Yaslandiniz. Iletisim -- @denujke")
                 return 1
         except UserNotParticipant:
-            caption = "Join our channel to use the bot"
+            caption = "Botu kullanmak icin kanalimiza katilin"
             await message.reply_photo(
-                photo="https://www.facebook.com/photo.php?fbid=1399096156913108&id=212657025557033&set=a.254003098089092",
-                caption=caption, 
+                photo="https://www.facebook.com/photo.php?fbid=1399096156913108&id=212657025557033&set=a.254003098089092", # Bu URL'nin erisilebilir oldugundan emin olun.
+                caption=caption,
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("Join Now...", url=f"{url}")]
+                    [InlineKeyboardButton("Simdi Katil...", url=f"{url}")]
                 ])
             )
             return 1
         except Exception:
-            await message.reply_text("Something Went Wrong. Contact us @Contact_xbot...")
+            await message.reply_text("Bir seyler ters gitti. Bize ulasin @denujke")
             return 1
 
 async def get_seconds(time_string):
-    """Convert time string to seconds"""
+    """Zaman dizesini saniyeye donusturur"""
     def extract_value_and_unit(ts):
         value = ""
         unit = ""
@@ -104,16 +104,16 @@ async def get_seconds(time_string):
         return value * 86400 * 365
     return 0
 
-PROGRESS_BAR = """\n
-│ **__Completed:__** {1}/{2}
-│ **__Bytes:__** {0}%
-│ **__Speed:__** {3}/s
-│ **__ETA:__** {4}
+PROGRESS_BAR = """
+| **__Tamamlandi:__** {1}/{2}
+| **__Bayt:__** {0}%
+| **__Hiz:__** {3}/s
+| **__Tahmini Sure:__** {4}
 ╰─────────────────────╯
 """
 
 async def progress_bar(current, total, ud_type, message, start):
-    """Display progress bar for operations"""
+    """Islemler icin ilerleme cubugunu gosterir"""
     now = time.time()
     diff = now - start
     if round(diff % 10.00) == 0 or current == total:
@@ -130,7 +130,7 @@ async def progress_bar(current, total, ud_type, message, start):
             ''.join(["♦" for i in range(math.floor(percentage / 10))]),
             ''.join(["◇" for i in range(10 - math.floor(percentage / 10))]))
 
-        tmp = progress + PROGRESS_BAR.format( 
+        tmp = progress + PROGRESS_BAR.format(
             round(percentage, 2),
             humanbytes(current),
             humanbytes(total),
@@ -138,12 +138,12 @@ async def progress_bar(current, total, ud_type, message, start):
             estimated_total_time if estimated_total_time != '' else "0 s"
         )
         try:
-            await message.edit(text="{}\n│ {}".format(ud_type, tmp))
+            await message.edit(text="{}\n| {}".format(ud_type, tmp))
         except:
             pass
 
 def humanbytes(size):
-    """Convert bytes to human readable format"""
+    """Baytlari insan tarafindan okunabilir formata donusturur"""
     if not size:
         return ""
     power = 2**10
@@ -155,46 +155,46 @@ def humanbytes(size):
     return str(round(size, 2)) + " " + Dic_powerN[n] + 'B'
 
 def TimeFormatter(milliseconds: int) -> str:
-    """Format milliseconds to readable time"""
+    """Milisaniyeleri okunabilir zamana bicimlendirir"""
     seconds, milliseconds = divmod(int(milliseconds), 1000)
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    tmp = ((str(days) + "d, ") if days else "") + \
-        ((str(hours) + "h, ") if hours else "") + \
-        ((str(minutes) + "m, ") if minutes else "") + \
-        ((str(seconds) + "s, ") if seconds else "") + \
+    tmp = ((str(days) + "g, ") if days else "") + \
+        ((str(hours) + "s, ") if hours else "") + \
+        ((str(minutes) + "d, ") if minutes else "") + \
+        ((str(seconds) + "sn, ") if seconds else "") + \
         ((str(milliseconds) + "ms, ") if milliseconds else "")
     return tmp[:-2]
 
 def convert(seconds):
-    """Convert seconds to HH:MM:SS format"""
+    """Saniyeleri SS:DD:SS formatina donusturur"""
     seconds = seconds % (24 * 3600)
     hour = seconds // 3600
     seconds %= 3600
     minutes = seconds // 60
-    seconds %= 60      
+    seconds %= 60
     return "%d:%02d:%02d" % (hour, minutes, seconds)
 
 async def userbot_join(userbot, invite_link):
-    """Join channel with userbot"""
+    """Kullanici botu ile kanala katilir"""
     try:
         await userbot.join_chat(invite_link)
-        return "Successfully joined the Channel"
+        return "Kanala basariyla katildi"
     except UserAlreadyParticipant:
-        return "User is already a participant."
+        return "Kullanici zaten katilimci."
     except (InviteHashInvalid, InviteHashExpired):
-        return "Could not join. Maybe your link is expired or Invalid."
+        return "Katilamadi. Belki linkiniz suresi dolmus veya gecersiz."
     except FloodWait:
-        return "Too many requests, try again later."
+        return "Cok fazla istek var, daha sonra tekrar deneyin."
     except Exception as e:
         print(e)
-        return "Could not join, try joining manually."
+        return "Katilamadi, manuel olarak katilmayi deneyin."
 
 def get_link(string):
-    """Extract URL from string"""
-    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-    url = re.findall(regex, string)   
+    """Dizeden URL cikarir"""
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    url = re.findall(regex, string)
     try:
         link = [x[0] for x in url][0]
         return link if link else False
@@ -202,12 +202,12 @@ def get_link(string):
         return False
 
 def video_metadata(file):
-    """Get video metadata using OpenCV"""
+    """OpenCV kullanarak video meta verilerini alir"""
     default_values = {'width': 1, 'height': 1, 'duration': 1}
     try:
         vcap = cv2.VideoCapture(file)
         if not vcap.isOpened():
-            return default_values  
+            return default_values
 
         width = round(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = round(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -215,32 +215,32 @@ def video_metadata(file):
         frame_count = vcap.get(cv2.CAP_PROP_FRAME_COUNT)
 
         if fps <= 0:
-            return default_values  
+            return default_values
 
         duration = round(frame_count / fps)
         if duration <= 0:
-            return default_values  
+            return default_values
 
         vcap.release()
         return {'width': width, 'height': height, 'duration': duration}
     except Exception as e:
-        print(f"Error in video_metadata: {e}")
+        print(f"video_metadata'da hata: {e}")
         return default_values
 
 def hhmmss(seconds):
-    """Convert seconds to HH:MM:SS format"""
+    """Saniyeleri HH:MM:SS formatina donusturur"""
     return time.strftime('%H:%M:%S', time.gmtime(seconds))
 
 async def screenshot(video, duration, sender):
-    """Take screenshot from video"""
+    """Videodan ekran goruntusu alir"""
     if os.path.exists(f'{sender}.jpg'):
         return f'{sender}.jpg'
     time_stamp = hhmmss(int(duration)/2)
     out = dt.now().isoformat("_", "seconds") + ".jpg"
     cmd = ["ffmpeg",
-           "-ss", f"{time_stamp}", 
+           "-ss", f"{time_stamp}",
            "-i", f"{video}",
-           "-frames:v", "1", 
+           "-frames:v", "1",
            f"{out}", "-y"]
     process = await asyncio.create_subprocess_exec(
         *cmd,
@@ -254,7 +254,7 @@ async def screenshot(video, duration, sender):
 
 last_update_time = time.time()
 async def progress_callback(current, total, progress_message):
-    """Progress callback for uploads"""
+    """Yuklemeler icin ilerleme geri cagirisi"""
     percent = (current / total) * 100
     global last_update_time
     current_time = time.time()
@@ -263,22 +263,22 @@ async def progress_callback(current, total, progress_message):
         completed_blocks = int(percent // 10)
         remaining_blocks = 10 - completed_blocks
         progress_bar = "♦" * completed_blocks + "◇" * remaining_blocks
-        current_mb = current / (1024 * 1024)  
-        total_mb = total / (1024 * 1024)      
+        current_mb = current / (1024 * 1024)
+        total_mb = total / (1024 * 1024)
         await progress_message.edit(
             f"╭──────────────────╮\n"
-            f"│        **__Uploading...__**       \n"
+            f"│           **__Yukleniyor...__** \n"
             f"├──────────\n"
             f"│ {progress_bar}\n\n"
-            f"│ **__Progress:__** {percent:.2f}%\n"
-            f"│ **__Uploaded:__** {current_mb:.2f} MB / {total_mb:.2f} MB\n"
+            f"│ **__Ilerleme:__** {percent:.2f}%\n"
+            f"│ **__Yuklendi:__** {current_mb:.2f} MB / {total_mb:.2f} MB\n"
             f"╰──────────────────╯\n\n"
-            f"**__Please wait__**"
+            f"**__Lutfen bekleyin__**"
         )
         last_update_time = current_time
 
 async def prog_bar(current, total, ud_type, message, start):
-    """Alternative progress bar implementation"""
+    """Alternatif ilerleme cubugu uygulamasi"""
     now = time.time()
     diff = now - start
     if round(diff % 10.00) == 0 or current == total:
@@ -295,7 +295,7 @@ async def prog_bar(current, total, ud_type, message, start):
             ''.join(["♦" for i in range(math.floor(percentage / 10))]),
             ''.join(["◇" for i in range(10 - math.floor(percentage / 10))]))
 
-        tmp = progress + PROGRESS_BAR.format( 
+        tmp = progress + PROGRESS_BAR.format(
             round(percentage, 2),
             humanbytes(current),
             humanbytes(total),
@@ -303,6 +303,7 @@ async def prog_bar(current, total, ud_type, message, start):
             estimated_total_time if estimated_total_time != '' else "0 s"
         )
         try:
-            await message.edit_text(text="{}\n│ {}".format(ud_type, tmp))
+            await message.edit_text(text="{}\n| {}".format(ud_type, tmp))
         except:
             pass
+
