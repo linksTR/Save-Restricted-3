@@ -1,12 +1,12 @@
 # ---------------------------------------------------
-# File Name: start.py
-# Description: A Pyrogram bot for downloading files from Telegram channels or groups 
-#              and uploading them back to Telegram.
-# Author: Adarsh
-# Created: 2025-01-11
-# Last Modified: 2025-01-11
-# Version: 2.0.6
-# License: MIT License
+# Dosya Adı: start.py
+# Açıklama: Telegram kanallarından veya gruplarından dosya indirmek ve
+# onları tekrar Telegram'a yüklemek için bir Pyrogram botu.
+# Yazar: Adarsh
+# Oluşturuldu: 2025-01-11
+# Son Değişiklik: 2025-01-11
+# Versiyon: 2.0.6
+# Lisans: MIT Lisansı
 # ---------------------------------------------------
 
 from pyrogram import filters
@@ -24,30 +24,29 @@ from pyrogram.types import BotCommand, InlineKeyboardButton, InlineKeyboardMarku
 @app.on_message(filters.command("set"))
 async def set(_, message):
     if message.from_user.id not in OWNER_ID:
-        await message.reply("You are not authorized to use this command.")
+        await message.reply("kara ambar kamyoncular dernegine uye misin?")
         return
-     
+    
     await app.set_bot_commands([
-        BotCommand("start", "🚀 Start the bot"),
-        BotCommand("login", "🔑 Get into the bot"),
-        BotCommand("logout", "🚪 Get out of the bot"),
-        BotCommand("batch", "🫠 Extract in bulk"),
-        BotCommand("cancel", "🚫 Cancel batch process"),
-        BotCommand("myplan", "⌛ Get your plan details"),
-        BotCommand("transfer", "💘 Gift premium to others"),
-        BotCommand("settings", "⚙️ Personalize things"),
-        BotCommand("speedtest", "🚅 Speed of server"),
-        BotCommand("help", "❓ If you're a noob, still!"),
-        BotCommand("terms", "🥺 Terms and conditions"),
-        BotCommand("admin_commands_list", "📜 List of admin commands")
+        BotCommand("start", "🚀 Botu baslat"),
+        BotCommand("login", "🔑 Bota giris yap"),
+        BotCommand("logout", "🚪 Bottan cikis yap"),
+        BotCommand("batch", "🫠 Toplu sekilde cikar"),
+        BotCommand("cancel", "🚫 Toplu islemi iptal et"),
+        BotCommand("myplan", "⌛ Plan detaylarinizi ogrenin"),
+        BotCommand("transfer", "💘 Baska kullanicilara premium hediye et"),
+        BotCommand("settings", "⚙️ Ayarlari kisisellestir"),
+        BotCommand("speedtest", "🚅 Sunucu hizi testi"),
+        BotCommand("help", "❓ Yardim"),
+        BotCommand("terms", "🥺 Sartlar ve kosullar"),
+        BotCommand("admin_commands_list", "📜 Yonetici komutlari listesi")
     ])
- 
-    await message.reply("✅ Commands configured successfully!")
+    await message.reply("✅ Komutlar basariyla yapilandirildi!")
 
-# Mode Toggle Commands (renamed from freemode to changemode)
+# Mod Degistirme Komutlari (freemode'dan changemode'a yeniden adlandirildi)
 @app.on_message(filters.command("changemode") & filters.user(OWNER_ID))
 async def toggle_free_mode(client, message):
-    """Toggle between free and premium modes"""
+    """Ucretsiz ve premium modlar arasinda gecis yap"""
     from devgagan.core.mongo.plans_db import db
     current_mode = await db.bot_mode.find_one({"_id": "mode"})
     new_mode = not current_mode.get("free_mode", False) if current_mode else True
@@ -58,71 +57,71 @@ async def toggle_free_mode(client, message):
         upsert=True
     )
     
-    status = "🆓 FREE MODE (available to everyone)" if new_mode else "💰 PREMIUM MODE (subscription required)"
-    await message.reply(f"Bot mode changed:\n\n{status}")
+    status = "🆓 UCRETSIZ MOD (herkesin erisiminde)" if new_mode else "💰 PREMIUM MOD (abonelik gereklidir)"
+    await message.reply(f"Bot modu degisti:\n\n{status}")
 
 @app.on_message(filters.command("modecheck"))
 async def check_mode(client, message):
-    """Check current bot mode"""
+    """Mevcut bot modunu kontrol et"""
     from devgagan.core.mongo.plans_db import db
     mode_data = await db.bot_mode.find_one({"_id": "mode"})
     current_mode = mode_data.get("free_mode", False) if mode_data else False
     
-    status = "🆓 Currently in FREE MODE (available to everyone)" if current_mode else "💰 Currently in PREMIUM MODE (subscription required)"
+    status = "🆓 Su anda UCRETSIZ MODDA (herkesin erisiminde)" if current_mode else "💰 Su anda PREMIUM MODDA (abonelik gereklidir)"
     await message.reply(status)
 
 help_pages = [
     (
-        "📝 **Bot Commands Overview (1/2)**:\n\n"
+        "📝 **Bot Komutlarina Genel Bakis (1/2)**:\n\n"
         "1. **/add userID**\n"
-        "> Add user to premium (Owner only)\n\n"
+        "> Kullaniciyi premiuma ekle (Sadece Sahip)\n\n"
         "2. **/rem userID**\n"
-        "> Remove user from premium (Owner only)\n\n"
+        "> Kullaniciyi premiumdan kaldir (Sadece Sahip)\n\n"
         "3. **/transfer userID**\n"
-        "> Transfer premium to your beloved major purpose for resellers (Premium members only)\n\n"
+        "> Resellerlar icin premiumu sevdiklerinize aktarin (Sadece Premium uyeler)\n\n"
         "4. **/get**\n"
-        "> Get all user IDs (Owner only)\n\n"
+        "> Tum kullanici ID'lerini al (Sadece Sahip)\n\n"
         "5. **/lock**\n"
-        "> Lock channel from extraction (Owner only)\n\n"
+        "> Kanali cikarmadan kilitle (Sadece Sahip)\n\n"
         "6. **/dl link**\n"
-        "> Download videos (Not available in v3 if you are using)\n\n"
+        "> Videolari indir (Eger kullaniyorsaniz v3'te mevcut degil)\n\n"
         "7. **/adl link**\n"
-        "> Download audio (Not available in v3 if you are using)\n\n"
+        "> Ses indir (Eger kullaniyorsaniz v3'te mevcut degil)\n\n"
         "8. **/login**\n"
-        "> Log into the bot for private channel access\n\n"
+        "> Ozel kanal erisimi icin bota giris yap\n\n"
         "9. **/batch**\n"
-        "> Bulk extraction for posts (After login)\n\n"
-        "19. **/changemode**\n"  # Changed from freemode
-        "> Toggle between free/premium modes (Owner only)\n\n"
+        "> Gonderiler icin toplu cikarim (Giris yaptiktan sonra)\n\n"
+        "19. **/changemode**\n"  # Freemode'dan degistirildi
+        "> Ucretsiz/premium modlari arasinda gecis yap (Sadece Sahip)\n\n"
         "20. **/modecheck**\n"
-        "> Check current mode\n\n"
+        "> Mevcut modu kontrol et\n\n"
     ),
     (
-        "📝 **Bot Commands Overview (2/2)**:\n\n"
+        "📝 **Bot Komutlarina Genel Bakis (2/2)**:\n\n"
         "10. **/logout**\n"
-        "> Logout from the bot\n\n"
+        "> Bottan cikis yap\n\n"
         "11. **/stats**\n"
-        "> Get bot stats\n\n"
+        "> Bot istatistiklerini al\n\n"
         "12. **/plan**\n"
-        "> Check premium plans\n\n"
+        "> Premium planlari kontrol et\n\n"
         "13. **/speedtest**\n"
-        "> Test the server speed (not available in v3)\n\n"
+        "> Sunucu hizini test et (v3'te mevcut degil)\n\n"
         "14. **/terms**\n"
-        "> Terms and conditions\n\n"
+        "> Sartlar ve kosullar\n\n"
         "15. **/cancel**\n"
-        "> Cancel ongoing batch process\n\n"
+        "> Devam eden toplu islemi iptal et\n\n"
         "16. **/myplan**\n"
-        "> Get details about your plans\n\n"
+        "> Planlariniz hakkinda detayli bilgi al\n\n"
         "17. **/session**\n"
-        "> Generate Pyrogram V2 session\n\n"
+        "> Pyrogram V2 oturumu olustur\n\n"
         "18. **/settings**\n"
-        "> 1. SETCHATID : To directly upload in channel or group or user's dm use it with -100[chatID]\n"
-        "> 2. SETRENAME : To add custom rename tag or username of your channels\n"
-        "> 3. CAPTION : To add custom caption\n"
-        "> 4. REPLACEWORDS : Can be used for words in deleted set via REMOVE WORDS\n"
-        "> 5. RESET : To set the things back to default\n\n"
-        "> You can set CUSTOM THUMBNAIL, PDF WATERMARK, VIDEO WATERMARK, SESSION-based login, etc. from settings\n\n"
-        "**__Powered by Adarsh__**"
+        "> 1. SETCHATID : Kanal, grup veya kullanici DM'sine dogrudan yuklemek icin -100[chatID] ile kullanin\n"
+        "> 2. SETRENAME : Ozel yeniden adlandirma etiketi veya kanallarinizin kullanici adini eklemek icin\n"
+        "> 3. CAPTION : Ozel baslik eklemek icin\n"
+        "> 4. REPLACEWORDS : KALDIRILAN KELIMELER araciligiyla silinen kelimeler icin kullanilabilir\n"
+        "> 5. RESET : Ayarlari varsayilana sifirlamak icin\n\n"
+        "> Ayarlardan OZEL ONIZLEME, PDF FILIGRANI, VIDEO FILIGRANI, OTURUM TABANLI GIRIS vb. ayarlayabilirsiniz\n\n"
+        "**__Adarsh tarafindan desteklenmektedir__**"
     )
 ]
  
@@ -131,7 +130,7 @@ async def help(client, message):
     join = await subscribe(client, message)
     if join == 1:
         return
-     
+    
     await send_or_edit_help_page(client, message, 0)
 
 @app.on_callback_query(filters.regex(r"help_(prev|next)_(\d+)"))
@@ -153,8 +152,8 @@ async def send_or_edit_help_page(_, message, page_number):
     if message is None:
         return
 
-    prev_button = InlineKeyboardButton("◀️ Previous", callback_data=f"help_prev_{page_number}")
-    next_button = InlineKeyboardButton("Next ▶️", callback_data=f"help_next_{page_number}")
+    prev_button = InlineKeyboardButton("◀️ Onceki", callback_data=f"help_prev_{page_number}")
+    next_button = InlineKeyboardButton("Sonraki ▶️", callback_data=f"help_next_{page_number}")
 
     buttons = []
     if page_number > 0:
@@ -167,7 +166,7 @@ async def send_or_edit_help_page(_, message, page_number):
     try:
         await message.delete()
     except Exception as e:
-        print(f"Failed to delete message: {e}")
+        print(f"Mesaj silinemedi: {e}")
 
     await message.reply(
         help_pages[page_number],
@@ -177,17 +176,17 @@ async def send_or_edit_help_page(_, message, page_number):
 @app.on_message(filters.command("terms") & filters.private)
 async def terms(client, message):
     terms_text = (
-        "> 📜 **Terms and Conditions** 📜\n\n"
-        "✨ We are not responsible for user deeds, and we do not promote copyrighted content. If any user engages in such activities, it is solely their responsibility.\n"
-        "✨ Upon purchase, we do not guarantee the uptime, downtime, or the validity of the plan. __Authorization and banning of users are at our discretion; we reserve the right to ban or authorize users at any time.__\n"
-        "✨ Payment to us **__does not guarantee__** authorization for the /batch command. All decisions regarding authorization are made at our discretion and mood.\n"
-        "✨ In FREE MODE, all features are available to everyone without restrictions.\n"
+        "> 📜 **Sartlar ve Kosullar** 📜\n\n"
+        "✨ Kullanici eylemlerinden sorumlu degiliz ve telif hakli icerigi tesvik etmiyoruz. Eger herhangi bir kullanici bu tur faaliyetlerde bulunursa, bu tamamen kendi sorumlulugundadir.\n"
+        "✨ Satin alma sonrasi, calisma suresi, durus suresi veya planin gecerliligi konusunda garanti vermiyoruz. __Kullanicilarin yetkilendirilmesi ve yasaklanmasi bizim takdirimizdedir; kullanicilari istedigimiz zaman yasaklama veya yetkilendirme hakkini sakli tutariz.__\n"
+        "✨ Bize yapilan odeme, /batch komutu icin yetkilendirme **__garanti etmez__**. Yetkilendirme ile ilgili tum kararlar bizim takdirimiz ve ruh halimize gore alinir.\n"
+        "✨ UCRETSIZ MOD'da, tum ozellikler herkesin erisimindedir ve herhangi bir kisitlama yoktur.\n"
     )
-     
+    
     buttons = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("📋 See Plans", callback_data="see_plan")],
-            [InlineKeyboardButton("💬 Contact Now", url="https://t.me/Contact_xbot")],
+            [InlineKeyboardButton("📋 Planlari Gor", callback_data="see_plan")],
+            [InlineKeyboardButton("💬 Simdi Iletisime Gec", url="https://t.me/denujke")],
         ]
     )
     await message.reply_text(terms_text, reply_markup=buttons)
@@ -200,35 +199,35 @@ async def plan(client, message):
     
     if current_mode:
         plan_text = (
-            "> 🎉 **FREE MODE ACTIVE** 🎉\n\n"
-            "✨ Currently all features are available to everyone for free!\n"
-            "✨ No subscriptions or payments required at this time.\n"
-            "✨ Enjoy unlimited access to all bot features.\n\n"
-            "📜 **Terms and Conditions**: For details, please send /terms\n"
+            "> 🎉 **UCRETSIZ MOD AKTIF** 🎉\n\n"
+            "✨ Su anda tum ozellikler herkese ucretsiz olarak sunulmaktadir!\n"
+            "✨ Bu sure zarfinda abonelik veya odeme gerekmemektedir.\n"
+            "✨ Tum bot ozelliklerine sinirsiz erisimin tadini cikarin.\n\n"
+            "📜 **Sartlar ve Kosullar**: Detaylar icin lutfen /terms gonderin\n"
         )
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("📜 See Terms", callback_data="see_terms")],
+                [InlineKeyboardButton("📜 Sartlari Gor", callback_data="see_terms")],
                 [
-                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot"),
-                    InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")
+                    InlineKeyboardButton("💬 Destekle Iletisime Gec", url="https://t.me/denujke"),
+                    InlineKeyboardButton("💰 Fiyatlandirma Kanali", url="https://t.me/denujke")
                 ]
             ]
         )
     else:
         plan_text = (
-            "> 💰 **Premium Plans**\n\n"
-            "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
-            "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
-            "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
-            "📜 **Check our pricing channel for current plans and offers**\n"
+            "> 💰 **Premium Planlar**\n\n"
+            "📥 **Indirme Limiti**: Kullanicilar tek bir toplu komutta 100.000 dosyaya kadar indirebilir.\n"
+            "🛑 **Toplu Islem**: Iki modunuz olacak /bulk ve /batch.\n"
+            "   - Kullanicilarin, herhangi bir indirme veya yukleme islemine baslamadan once islemin otomatik olarak iptal olmasini beklemesi tavsiye edilir.\n\n"
+            "📜 **Mevcut planlar ve teklifler icin fiyatlandirma kanalimizi kontrol edin**\n"
         )
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")],
+                [InlineKeyboardButton("💰 Fiyatlandirma Kanali", url="https://t.me/denujke")],
                 [
-                    InlineKeyboardButton("📜 See Terms", callback_data="see_terms"),
-                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot")
+                    InlineKeyboardButton("📜 Sartlari Gor", callback_data="see_terms"),
+                    InlineKeyboardButton("💬 Destekle Iletisime Gec", url="https://t.me/denujke")
                 ]
             ]
         )
@@ -243,37 +242,38 @@ async def see_plan(client, callback_query):
     
     if current_mode:
         plan_text = (
-            "> 🎉 **FREE MODE ACTIVE** 🎉\n\n"
-            "✨ Currently all features are available to everyone for free!\n"
-            "✨ No subscriptions or payments required at this time.\n"
-            "✨ Enjoy unlimited access to all bot features.\n\n"
-            "📜 **Terms and Conditions**: For details, please send /terms\n"
+            "> 🎉 **UCRETSIZ MOD AKTIF** 🎉\n\n"
+            "✨ Su anda tum ozellikler herkese ucretsiz olarak sunulmaktadir!\n"
+            "✨ Bu sure zarfinda abonelik veya odeme gerekmemektedir.\n"
+            "✨ Tum bot ozelliklerine sinirsiz erisimin tadini cikarin.\n\n"
+            "📜 **Sartlar ve Kosullar**: Detaylar icin lutfen /terms gonderin\n"
         )
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("📜 See Terms", callback_data="see_terms")],
+                [InlineKeyboardButton("📜 Sartlari Gor", callback_data="see_terms")],
                 [
-                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot"),
-                    InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")
+                    InlineKeyboardButton("💬 Destekle Iletisime Gec", url="https://t.me/denujke"),
+                    InlineKeyboardButton("💰 Fiyatlandirma Kanali", url="https://t.me/denujke")
                 ]
             ]
         )
     else:
         plan_text = (
-            "> 💰 **Premium Plans**\n\n"
-            "📥 **Download Limit**: Users can download up to 100,000 files in a single batch command.\n"
-            "🛑 **Batch**: You will get two modes /bulk and /batch.\n"
-            "   - Users are advised to wait for the process to automatically cancel before proceeding with any downloads or uploads.\n\n"
-            "📜 **Check our pricing channel for current plans and offers**\n"
+            "> 💰 **Premium Planlar**\n\n"
+            "📥 **Indirme Limiti**: Kullanicilar tek bir toplu komutta 100.000 dosyaya kadar indirebilir.\n"
+            "🛑 **Toplu Islem**: Iki modunuz olacak /bulk ve /batch.\n"
+            "   - Kullanicilarin, herhangi bir indirme veya yukleme islemine baslamadan once islemin otomatik olarak iptal olmasini beklemesi tavsiye edilir.\n\n"
+            "📜 **Mevcut planlar ve teklifler icin fiyatlandirma kanalimizi kontrol edin**\n"
         )
         buttons = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("💰 Pricing Channel", url="https://t.me/+9FZJh0WMZnE4YWRk")],
+                [InlineKeyboardButton("💰 Fiyatlandirma Kanali", url="https://t.me/denujke")],
                 [
-                    InlineKeyboardButton("📜 See Terms", callback_data="see_terms"),
-                    InlineKeyboardButton("💬 Contact Support", url="https://t.me/Contact_xbot")
+                    InlineKeyboardButton("📜 Sartlari Gor", callback_data="see_terms"),
+                    InlineKeyboardButton("💬 Destekle Iletisime Gec", url="https://t.me/denujke")
                 ]
             ]
         )
     
     await callback_query.message.edit_text(plan_text, reply_markup=buttons)
+ 
