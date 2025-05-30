@@ -59,12 +59,12 @@ async def subscribe(app, message):
         try:
             user = await app.get_chat_member(update_channel, message.from_user.id)
             if user.status == "kicked":
-                await message.reply_text("You are Banned. Contact -- @Contact_xbot")
+                await message.reply_text("You are Banned. Contact -- @denujke")
                 return 1
         except UserNotParticipant:
             caption = "Join our channel to use the bot"
             await message.reply_photo(
-                photo="https://tecolotito.elsiglocoahuila.mx/i/2023/12/2131463.jpeg",
+                photo="https://www.facebook.com/photo.php?fbid=1399096156913108&id=212657025557033&set=a.254003098089092",
                 caption=caption, 
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("Join Now...", url=f"{url}")]
