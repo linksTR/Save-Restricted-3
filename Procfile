@@ -1,1 +1,2 @@
-worker: python -m devgagan
+web: python app.py
+bot: python -m devgagan
