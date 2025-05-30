@@ -1,16 +1,17 @@
 # ---------------------------------------------------
-# Dosya Adi: ytdl.py (salt kod)
-# Aciklama: Telegram kanallarindan veya gruplarindan dosya indirmek ve
-# onlari tekrar Telegram'a yuklemek icin bir Pyrogram botu.
+# Dosya Adı: ytdl.py (salt kod)
+# Açıklama: Telegram kanallarından veya gruplarından dosya indirmek ve
+# onları tekrar Telegram'a yüklemek için bir Pyrogram botu.
 # Yazar: Gagan
 # GitHub: https://github.com/devgaganin/
 # Telegram: https://t.me/team_spy_pro
 # YouTube: https://youtube.com/@dev_gagan
-# Olusturulma Tarihi: 2025-01-11
-# Son Degisiklik: 2025-01-11
-# Surum: 2.0.5
-# Lisans: MIT Lisansi
+# Oluşturulma Tarihi: 2025-01-11
+# Son Değişiklik: 2025-01-11
+# Sürüm: 2.0.5
+# Lisans: MIT Lisansı
 # ---------------------------------------------------
+
 
 import yt_dlp
 import os
@@ -38,6 +39,7 @@ from mutagen.mp3 import MP3
 
 logger = logging.getLogger(__name__)
 
+
 thread_pool = ThreadPoolExecutor()
 ongoing_downloads = {}
 
@@ -50,8 +52,9 @@ def d_thumbnail(thumbnail_url, save_path):
                 f.write(chunk)
         return save_path
     except requests.exceptions.RequestException as e:
-        logger.error(f"Thumbnail indirme basarisiz oldu: {e}")
+        logger.error(f"Thumbnail indirme başarısız oldu: {e}")
         return None
+
 
 async def download_thumbnail_async(url, path):
     async with aiohttp.ClientSession() as session:
@@ -60,15 +63,18 @@ async def download_thumbnail_async(url, path):
                 with open(path, 'wb') as f:
                     f.write(await response.read())
 
+
 async def extract_audio_async(ydl_opts, url):
     def sync_extract():
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             return ydl.extract_info(url, download=True)
     return await asyncio.get_event_loop().run_in_executor(thread_pool, sync_extract)
 
+
 def get_random_string(length=7):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
+
 
 async def process_audio(client, event, url, cookies_env_var=None):
     cookies = None
@@ -95,13 +101,13 @@ async def process_audio(client, event, url, cookies_env_var=None):
     }
     prog = None
 
-    progress_message = await event.reply("**__Ses cikarma baslatiliyor...__**")
+    progress_message = await event.reply("**__Ses çıkarma başlatılıyor...__**")
 
     try:
         info_dict = await extract_audio_async(ydl_opts, url)
-        title = info_dict.get('title', 'Cikarilan Ses')
+        title = info_dict.get('title', 'Çıkarılan Ses')
 
-        await progress_message.edit("**__Metadata duzenleniyor...__**")
+        await progress_message.edit("**__Metadata düzenleniyor...__**")
 
         if os.path.exists(download_path):
             def edit_metadata():
@@ -130,7 +136,7 @@ async def process_audio(client, event, url, cookies_env_var=None):
             chat_id = event.chat_id
             if os.path.exists(download_path):
                 await progress_message.delete()
-                prog = await client.send_message(chat_id, "**__Yukleme Baslatiliyor...__**")
+                prog = await client.send_message(chat_id, "**__Yükleme Başlatılıyor...__**")
                 uploaded = await fast_upload(
                     client, download_path,
                     reply=prog,
@@ -141,11 +147,11 @@ async def process_audio(client, event, url, cookies_env_var=None):
                 if prog:
                     await prog.delete()
             else:
-                await event.reply("**__Ses dosyasi cikarma sonrasi bulunamadi!__**")
+                await event.reply("**__Ses dosyası çıkarma sonrası bulunamadı!__**")
 
     except Exception as e:
-        logger.exception("Ses cikarma veya yukleme sirasinda hata olustu")
-        await event.reply(f"**__Bir hata olustu: {e}__**")
+        logger.exception("Ses çıkarma veya yükleme sırasında hata oluştu")
+        await event.reply(f"**__Bir hata oluştu: {e}__**")
     finally:
         if os.path.exists(download_path):
             os.remove(download_path)
@@ -156,11 +162,11 @@ async def process_audio(client, event, url, cookies_env_var=None):
 async def handler(event):
     user_id = event.sender_id
     if user_id in ongoing_downloads:
-        await event.reply("**Zaten devam eden bir indirme isleminiz var. Tamamlanana kadar bekleyiniz!**")
+        await event.reply("**Zaten devam eden bir indirme işleminiz var. Lütfen tamamlanana kadar bekleyiniz!**")
         return
 
     if len(event.message.text.split()) < 2:
-        await event.reply("**Kullanim:** `/adl <video-link>`\n\nLutfen gecerli bir video linki saglayin!")
+        await event.reply("**Kullanım:** `/adl <video-link>`\n\nLütfen geçerli bir video linki sağlayın!")
         return
 
     url = event.message.text.split()[1]
@@ -174,9 +180,10 @@ async def handler(event):
         else:
             await process_audio(client, event, url)
     except Exception as e:
-        await event.reply(f"**Bir hata olustu:** `{e}`")
+        await event.reply(f"**Bir hata oluştu:** `{e}`")
     finally:
         ongoing_downloads.pop(user_id, None)
+
 
 async def fetch_video_info(url, ydl_opts, progress_message, check_duration_and_size):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -185,12 +192,12 @@ async def fetch_video_info(url, ydl_opts, progress_message, check_duration_and_s
         if check_duration_and_size:
             duration = info_dict.get('duration', 0)
             if duration and duration > 3 * 3600:
-                await progress_message.edit("**❌ __Video 3 saatten uzun. Indirme iptal edildi...__**")
+                await progress_message.edit("**❌ __Video 3 saatten uzun. İndirme iptal edildi...__**")
                 return None
 
             estimated_size = info_dict.get('filesize_approx', 0)
             if estimated_size and estimated_size > 2 * 1024 * 1024 * 1024:
-                await progress_message.edit("**🤞 __Video boyutu 2GB'tan buyuk. Indirme iptal ediliyor.__**")
+                await progress_message.edit("**🤞 __Video boyutu 2GB'tan büyük. İndirme iptal ediliyor.__**")
                 return None
 
         return info_dict
@@ -199,16 +206,17 @@ def download_video(url, ydl_opts):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
+
 @client.on(events.NewMessage(pattern="/dl"))
 async def handler(event):
     user_id = event.sender_id
 
     if user_id in ongoing_downloads:
-        await event.reply("**Zaten devam eden bir ytdlp indirme isleminiz var. Tamamlanana kadar bekleyiniz!**")
+        await event.reply("**Zaten devam eden bir ytdlp indirme işleminiz var. Lütfen tamamlanana kadar bekleyiniz!**")
         return
 
     if len(event.message.text.split()) < 2:
-        await event.reply("**Kullanim:** `/dl <video-link>`\n\nLutfen gecerli bir video linki saglayin!")
+        await event.reply("**Kullanım:** `/dl <video-link>`\n\nLütfen geçerli bir video linki sağlayın!")
         return
 
     url = event.message.text.split()[1]
@@ -222,9 +230,10 @@ async def handler(event):
             await process_video(client, event, url, None, check_duration_and_size=False)
 
     except Exception as e:
-        await event.reply(f"**Bir hata olustu:** `{e}`")
+        await event.reply(f"**Bir hata oluştu:** `{e}`")
     finally:
         ongoing_downloads.pop(user_id, None)
+
 
 user_progress = {}
 
@@ -264,15 +273,15 @@ def progress_callback(done, total, user_id):
 
     final = (
         f"╭──────────────────╮\n"
-        f"│           **__Yukleniyor...__** \n"
+        f"│           **__Yükleniyor...__** \n"
         f"├──────────\n"
         f"│ {progress_bar}\n\n"
-        f"│ **__Ilerleme:__** {percent:.2f}%\n"
+        f"│ **__İlerleme:__** {percent:.2f}%\n"
         f"│ **__Tamamlanan:__** {done_mb:.2f} MB / {total_mb:.2f} MB\n"
-        f"│ **__Hiz:__** {speed_mbps:.2f} Mbps\n"
-        f"│ **__Kalan Sure:__** {remaining_time_min:.2f} dk\n"
+        f"│ **__Hız:__** {speed_mbps:.2f} Mbps\n"
+        f"│ **__Kalan Süre:__** {remaining_time_min:.2f} dk\n"
         f"╰──────────────────╯\n\n"
-        f"**__Lutfen bekleyin...__**"
+        f"**__Lütfen bekleyin...__**"
     )
 
     user_data['previous_done'] = done
@@ -282,7 +291,7 @@ def progress_callback(done, total, user_id):
 
 async def process_video(client, event, url, cookies_env_var, check_duration_and_size=False):
     start_time = time.time()
-    logger.info(f"Link alindi: {url}")
+    logger.info(f"Link alındı: {url}")
 
     cookies = None
     if cookies_env_var:
@@ -290,14 +299,14 @@ async def process_video(client, event, url, cookies_env_var, check_duration_and_
 
     random_filename = get_random_string() + ".mp4"
     download_path = os.path.abspath(random_filename)
-    logger.info(f"Olusturulan rastgele indirme yolu: {download_path}")
+    logger.info(f"Oluşturulan rastgele indirme yolu: {download_path}")
 
     temp_cookie_path = None
     if cookies:
         with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as temp_cookie_file:
             temp_cookie_file.write(cookies)
             temp_cookie_path = temp_cookie_file.name
-            logger.info(f"Gecici cerez dosyasi olusturuldu: {temp_cookie_path}")
+            logger.info(f"Geçici çerez dosyası oluşturuldu: {temp_cookie_path}")
 
     thumbnail_file = None
     metadata = {'width': None, 'height': None, 'duration': None, 'thumbnail': None}
@@ -310,8 +319,8 @@ async def process_video(client, event, url, cookies_env_var, check_duration_and_
         'verbose': True,
     }
     prog = None
-    progress_message = await event.reply("**__Indirme baslatiliyor...__**")
-    logger.info("Indirme islemi baslatiliyor...")
+    progress_message = await event.reply("**__İndirme başlatılıyor...__**")
+    logger.info("İndirme işlemi başlatılıyor...")
     try:
         info_dict = await fetch_video_info(url, ydl_opts, progress_message, check_duration_and_size)
         if not info_dict:
@@ -343,7 +352,7 @@ async def process_video(client, event, url, cookies_env_var, check_duration_and_
         chat_id = event.chat_id
         if os.path.exists(download_path):
             await progress_message.delete()
-            prog = await client.send_message(chat_id, "**__Yukleme Baslatiliyor...__**")
+            prog = await client.send_message(chat_id, "**__Yükleme Başlatılıyor...__**")
             uploaded = await fast_upload(
                 client, download_path,
                 reply=prog,
@@ -366,10 +375,10 @@ async def process_video(client, event, url, cookies_env_var, check_duration_and_
             if prog:
                 await prog.delete()
         else:
-            await event.reply("**__Indirme sonrasi dosya bulunamadi. Bir sorun olustu!__**")
+            await event.reply("**__İndirme sonrası dosya bulunamadı. Bir sorun oluştu!__**")
     except Exception as e:
-        logger.exception("Indirme veya yukleme sirasinda bir hata olustu.")
-        await event.reply(f"**__Bir hata olustu: {e}__**")
+        logger.exception("İndirme veya yükleme sırasında bir hata oluştu.")
+        await event.reply(f"**__Bir hata oluştu: {e}__**")
     finally:
         if os.path.exists(download_path):
             os.remove(download_path)
