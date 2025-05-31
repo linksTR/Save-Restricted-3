@@ -191,15 +191,16 @@ async def userbot_join(userbot, invite_link):
         print(e)
         return "Katilamadi, manuel olarak katilmayi deneyin."
 
-def get_link(string):
-    """Dizeden URL cikarir"""
-    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-    url = re.findall(regex, string)
-    try:
-        link = [x[0] for x in url][0]
-        return link if link else False
-    except Exception:
-        return False
+def get_link(text):
+    # Your current regex (replace with the actual one from your code)
+    # Assuming 'regex' is defined elsewhere in your file or passed to get_link
+    # For demonstration, let's use a placeholder if you don't know it
+    telegram_link_regex = r"(https?://t\.me/[a-zA-Z0-9_]+/\d+|https?://t\.me/[a-zA-Z0-9_]+|tg://openmessage\?user=\d+&message=\d+)"
+
+    url = re.findall(telegram_link_regex, text) # Use the corrected regex
+    if url:
+        return url[0] # Return the first found link
+    return None # Or handle as per your logic
 
 def video_metadata(file):
     """OpenCV kullanarak video meta verilerini alir"""
