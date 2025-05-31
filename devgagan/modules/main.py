@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 # Kendi yeni modüllerimizi içe aktarıyoruz
-from modules.config import Config as RestrictedModuleConfig # Çakışmayı önlemek için farklı isim
+from .config import Config as RestrictedModuleConfig
 from modules.restricted_content_handler import handle_restricted_content # Ana işleyici fonksiyon
 
 # Mevcut devgagan import'ları (değişmedi)
