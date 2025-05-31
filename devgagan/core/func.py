@@ -23,6 +23,8 @@ from pyrogram.errors import FloodWait, InviteHashInvalid, InviteHashExpired, Use
 from datetime import datetime as dt
 import asyncio, subprocess, re, os, time
 
+url_regex = r"(https?://\S+)"
+
 async def check_bot_mode():
     """Botun ucretsiz modda olup olmadigini veritabanindan kontrol eder"""
     if MONGO_DB:
